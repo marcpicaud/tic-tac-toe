@@ -19,5 +19,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 target_link_libraries(bin_srv ${CMAKE_THREAD_LIBS_INIT})
 if(WIN32)
+
+    message(FATAL_ERROR "FUCK YOU ASSHOLE")
   target_link_libraries(bin_client wsock32 ws2_32)
 endif()

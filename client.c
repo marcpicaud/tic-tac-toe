@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+
 // Pre-processor instructions for Windows 
 #ifdef WIN32
 
@@ -6,10 +11,6 @@
 // Pre-processor instructions for Linux
 #elif defined (linux)
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -89,17 +90,17 @@ void recv_msg(int sockfd, char * msg)
 /* Reads an int from the server socket. */
 int recv_int(int sockfd)
 {
-    int msg = 0;
-    int n = recv(sockfd, &msg, sizeof(int), 0);
+    char msg;
+    int n = recv(sockfd, &msg, sizeof(char), 0);
     
-    if (n < 0 || n != sizeof(int)) 
+    if (n < 0 || n != sizeof(char)) 
         error("ERROR reading int from server socket");
     
     #ifdef DEBUG
-    printf("[DEBUG] Received int: %d\n", msg);
+    printf("[DEBUG] Received int: %d\n", msg - '0');
     #endif 
     
-    return msg;
+    return msg - '0';
 }
 
 /*
@@ -109,7 +110,8 @@ int recv_int(int sockfd)
 /* Writes an int to the server socket. */
 void write_server_int(int sockfd, int msg)
 {
-    int n = send(sockfd, &msg, sizeof(int), 0);
+    char castedMsg = msg + '0';
+    int n = send(sockfd, &castedMsg, sizeof(char), 0);
     if (n < 0)
         error("ERROR writing int to server socket");
     

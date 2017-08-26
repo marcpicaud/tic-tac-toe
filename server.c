@@ -1,16 +1,19 @@
-// Pre-processor instructions for Windows 
-#ifdef WIN32
-
-#include <winsock2.h> 
-
-// Pre-processor instructions for Linux
-#elif defined (linux)
-
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+
+// Pre-processor instructions for Windows 
+#ifdef WIN32
+
+#include <winsock2.h> 
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+
+// Pre-processor instructions for Linux
+#elif defined (linux)
+
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -69,17 +72,17 @@ void error(const char *msg)
 /* Reads an int from a client socket. */
 int recv_int(int cli_sockfd)
 {
-    int msg = 0;
-    int n = recv(cli_sockfd, &msg, sizeof(int), 0);
+    char msg;
+    int n = recv(cli_sockfd, &msg, sizeof(char), 0);
     
-    if (n < 0 || n != sizeof(int)) /* Not what we were expecting. Client likely disconnected. */
+    if (n < 0 || n != sizeof(char)) /* Not what we were expecting. Client likely disconnected. */
         return -1;
 
     #ifdef DEBUG
-    printf("[DEBUG] Received int: %d\n", msg);
+    printf("[DEBUG] Received int: %d\n", msg - '0');
     #endif 
     
-    return msg;
+    return msg - '0';
 }
 
 /*
@@ -97,7 +100,8 @@ void write_client_msg(int cli_sockfd, char * msg)
 /* Writes an int to a client socket. */
 void write_client_int(int cli_sockfd, int msg)
 {
-    int n = send(cli_sockfd, &msg, sizeof(int), 0);
+    char castedMsg = msg + '0';
+    int n = send(cli_sockfd, &castedMsg, sizeof(char), 0);
     if (n < 0)
         error("ERROR writing int to client socket");
 }
