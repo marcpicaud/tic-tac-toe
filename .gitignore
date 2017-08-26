@@ -15,3 +15,16 @@
 Time Diagram
 Report
 *~
+
+CMakeFiles
+
+Makefile
+
+CMakeCache.txt
+
+bin_client
+bin_srv
+
+cmake_install.cmake
+
+
