@@ -1,2 +1,2 @@
-/usr/local/bin/bin_client
-/usr/local/bin/bin_srv
+/scoffi_a/tic-tac-toe/build/_CPack_Packages/Linux/TZ/tic-tac-toe-1.0.1-Linux/bin/bin_client
+/scoffi_a/tic-tac-toe/build/_CPack_Packages/Linux/TZ/tic-tac-toe-1.0.1-Linux/bin/bin_srv
