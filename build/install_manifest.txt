@@ -1,2 +1,2 @@
-/scoffi_a/tic-tac-toe/build/_CPack_Packages/Linux/TZ/tic-tac-toe-1.0.1-Linux/bin/bin_client
-/scoffi_a/tic-tac-toe/build/_CPack_Packages/Linux/TZ/tic-tac-toe-1.0.1-Linux/bin/bin_srv
+C:/Program Files (x86)/tic-tac-toe/bin/bin_client.exe
+C:/Program Files (x86)/tic-tac-toe/bin/bin_srv.exe

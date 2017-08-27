@@ -1,12 +1,15 @@
+#define DEBUG
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 
-// Pre-processor instructions for Windows 
+// Pre-processor instructions for Windows
 #ifdef WIN32
 
-#include <winsock2.h> 
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 
 // Pre-processor instructions for Linux
 #elif defined (linux)
@@ -60,10 +63,11 @@ static void end(void)
 void error(const char *msg)
 {
     #ifdef DEBUG
+    printf(" WSA ERROR : %d\n", WSAGetLastError());
     perror(msg);
     #else
     printf("Either the server shut down or the other player disconnected.\nGame over.\n");
-    #endif 
+    #endif
 
     exit(0);
 }
@@ -78,13 +82,13 @@ void recv_msg(int sockfd, char * msg)
     /* All messages are 3 bytes. */
     memset(msg, 0, 4);
     int n = recv(sockfd, msg, 3, 0);
-    
-    if (n < 0 || n != 3) /* Not what we were expecting. Server got killed or the other client disconnected. */ 
+
+    if (n < 0 || n != 3) /* Not what we were expecting. Server got killed or the other client disconnected. */
         error("ERROR reading message from server socket.");
 
     #ifdef DEBUG
     printf("[DEBUG] Received message: %s\n", msg);
-    #endif 
+    #endif
 }
 
 /* Reads an int from the server socket. */
@@ -92,14 +96,14 @@ int recv_int(int sockfd)
 {
     char msg;
     int n = recv(sockfd, &msg, sizeof(char), 0);
-    
-    if (n < 0 || n != sizeof(char)) 
+
+    if (n < 0 || n != sizeof(char))
         error("ERROR reading int from server socket");
-    
+
     #ifdef DEBUG
     printf("[DEBUG] Received int: %d\n", msg - '0');
-    #endif 
-    
+    #endif
+
     return msg - '0';
 }
 
@@ -114,10 +118,10 @@ void write_server_int(int sockfd, int msg)
     int n = send(sockfd, &castedMsg, sizeof(char), 0);
     if (n < 0)
         error("ERROR writing int to server socket");
-    
+
     #ifdef DEBUG
     printf("[DEBUG] Wrote int to server: %d\n", msg);
-    #endif 
+    #endif
 }
 
 /*
@@ -129,37 +133,38 @@ int connect_to_server(char * hostname, int portno)
 {
     SOCKADDR_IN serv_addr;
     struct hostent *server;
- 
+
     /* Get a socket. */
     SOCKET sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	
-    if (sockfd == INVALID_SOCKET) 
+
+    if (sockfd == INVALID_SOCKET)
         error("ERROR opening socket for server.");
-	
+
     /* Get the address of the server. */
     server = gethostbyname(hostname);
-	
+
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
         exit(0);
     }
-	
+
 	/* Zero out memory for server info. */
 	memset(&serv_addr, 0, sizeof(serv_addr));
 
 	/* Set up the server info. */
     serv_addr.sin_family = AF_INET;
-    memmove(server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length);
-    serv_addr.sin_port = htons(portno); 
+    serv_addr.sin_addr = *(IN_ADDR *) server->h_addr;
+    //memmove(server->h_addr, &serv_addr.sin_addr.s_addr, server->h_length);
+    serv_addr.sin_port = htons(portno);
 
 	/* Make the connection. */
-    if (connect(sockfd, (SOCKADDR *) &serv_addr, sizeof(serv_addr)) == SOCKET_ERROR) 
+    if (connect(sockfd, (SOCKADDR *) &serv_addr, sizeof(serv_addr)) == SOCKET_ERROR)
         error("ERROR connecting to server");
 
     #ifdef DEBUG
     printf("[DEBUG] Connected to server.\n");
-    #endif 
-    
+    #endif
+
     return sockfd;
 }
 
@@ -181,17 +186,17 @@ void draw_board(char board[][3])
 void take_turn(int sockfd)
 {
     char buffer[10];
-    
-    while (1) { /* Ask until we receive. */ 
+
+    while (1) { /* Ask until we receive. */
         printf("Enter 0-8 to make a move, or 9 for number of active players: ");
 	    fgets(buffer, 10, stdin);
 	    int move = buffer[0] - '0';
         if (move <= 9 && move >= 0){
             printf("\n");
             /* Send players move to the server. */
-            write_server_int(sockfd, move);   
+            write_server_int(sockfd, move);
             break;
-        } 
+        }
         else
             printf("\nInvalid input. Try again.\n");
     }
@@ -205,7 +210,7 @@ void get_update(int sockfd, char board[][3])
     int move = recv_int(sockfd);
 
     /* Update the game board. */
-    board[move/3][move%3] = player_id ? 'X' : 'O';    
+    board[move/3][move%3] = player_id ? 'X' : 'O';
 }
 
 /*
@@ -229,11 +234,11 @@ int main(int argc, char *argv[])
 
     #ifdef DEBUG
     printf("[DEBUG] Client ID: %d\n", id);
-    #endif 
+    #endif
 
     char msg[4];
     char board[3][3] = { {' ', ' ', ' '}, /* Game board */
-                         {' ', ' ', ' '}, 
+                         {' ', ' ', ' '},
                          {' ', ' ', ' '} };
 
     printf("Tic-Tac-Toe\n------------\n");
@@ -259,11 +264,11 @@ int main(int argc, char *argv[])
 	        take_turn(sockfd);
         }
         else if (!strcmp(msg, "INV")) { /* Move was invalid. Note that a "TRN" message will always follow an "INV" message, so we will end up at the above case in the next iteration. */
-            printf("That position has already been played. Try again.\n"); 
+            printf("That position has already been played. Try again.\n");
         }
         else if (!strcmp(msg, "CNT")) { /* Server is sending the number of active players. Note that a "TRN" message will always follow a "CNT" message. */
             int num_players = recv_int(sockfd);
-            printf("There are currently %d active players.\n", num_players); 
+            printf("There are currently %d active players.\n", num_players);
         }
         else if (!strcmp(msg, "UPD")) { /* Server is sending a game board update. */
             get_update(sockfd, board);
@@ -287,7 +292,7 @@ int main(int argc, char *argv[])
         else /* Weird... */
             error("Unknown message.");
     }
-    
+
     printf("Game over.\n");
 
     /* Close server socket and exit. */
