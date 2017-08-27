@@ -62,6 +62,9 @@ static void end(void)
 
 void error(const char *msg)
 {
+  #ifdef WIN32
+      printf(" WSA ERROR : %d\n", WSAGetLastError());
+  #endif
     perror(msg);
     pthread_exit(NULL);
 }
@@ -74,9 +77,12 @@ void error(const char *msg)
 int recv_int(int cli_sockfd)
 {
     int msg;
-    int n = recv(cli_sockfd, (char *)&msg, sizeof(int), 0);
+    char myBuf[25];
+    memset(myBuf, 0, 25);
+    int n = recv(cli_sockfd, myBuf, 25, 0);
+    msg = atoi(myBuf);
 
-    if (n < 0 || n != sizeof(char)) /* Not what we were expecting. Client likely disconnected. */
+    if (n < 0) /* Not what we were expecting. Client likely disconnected. */
         return -1;
 
     #ifdef DEBUG
@@ -103,7 +109,10 @@ void write_client_msg(int cli_sockfd, char * msg)
 void write_client_int(int cli_sockfd, int msg)
 {
     //char castedMsg = msg + '0';
-    int n = send(cli_sockfd, (char *)&msg, sizeof(int), 0);
+    char castedMsg[25];
+    memset(castedMsg, 0, 25);
+    itoa(msg, castedMsg, 10);
+    int n = send(cli_sockfd, castedMsg, strlen(castedMsg), 0);
     if (n < 0)
         error("ERROR writing int to client socket");
 }
