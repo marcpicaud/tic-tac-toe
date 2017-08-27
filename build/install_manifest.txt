@@ -1,2 +1,0 @@
-C:/Program Files (x86)/tic-tac-toe/bin/bin_client.exe
-C:/Program Files (x86)/tic-tac-toe/bin/bin_srv.exe
