@@ -123,7 +123,8 @@ void write_server_int(int sockfd, int msg)
     //char castedMsg = msg + '0';
     char myBuf[25];
     memset(myBuf, 0, 25);
-    itoa(msg, myBuf, 10);
+    /* itoa(msg, myBuf, 10); */
+    snprintf(myBuf, sizeof(myBuf), "%d", msg);
     int n = send(sockfd, myBuf, strlen(myBuf), 0);
     if (n < 0)
         error("ERROR writing int to server socket");

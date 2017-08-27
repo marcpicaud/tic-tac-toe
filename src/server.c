@@ -111,7 +111,8 @@ void write_client_int(int cli_sockfd, int msg)
     //char castedMsg = msg + '0';
     char castedMsg[25];
     memset(castedMsg, 0, 25);
-    itoa(msg, castedMsg, 10);
+    /* itoa(msg, castedMsg, 10); */
+    snprintf(castedMsg, sizeof(castedMsg), "%d", msg);
     int n = send(cli_sockfd, castedMsg, strlen(castedMsg), 0);
     if (n < 0)
         error("ERROR writing int to client socket");
