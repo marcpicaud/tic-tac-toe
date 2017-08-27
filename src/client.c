@@ -63,7 +63,10 @@ static void end(void)
 void error(const char *msg)
 {
     #ifdef DEBUG
+
+#ifdef WIN32
     printf(" WSA ERROR : %d\n", WSAGetLastError());
+#endif
     perror(msg);
     #else
     printf("Either the server shut down or the other player disconnected.\nGame over.\n");
