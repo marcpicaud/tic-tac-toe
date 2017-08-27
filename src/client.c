@@ -94,17 +94,17 @@ void recv_msg(int sockfd, char * msg)
 /* Reads an int from the server socket. */
 int recv_int(int sockfd)
 {
-    char msg;
-    int n = recv(sockfd, &msg, sizeof(char), 0);
+    int msg;
+    int n = recv(sockfd, (char *)&msg, sizeof(int), 0);
 
-    if (n < 0 || n != sizeof(char))
+    if (n < 0 || n != sizeof(int))
         error("ERROR reading int from server socket");
 
     #ifdef DEBUG
-    printf("[DEBUG] Received int: %d\n", msg - '0');
+    printf("[DEBUG] Received int: %d\n", msg);
     #endif
 
-    return msg - '0';
+    return msg;
 }
 
 /*
@@ -114,8 +114,8 @@ int recv_int(int sockfd)
 /* Writes an int to the server socket. */
 void write_server_int(int sockfd, int msg)
 {
-    char castedMsg = msg + '0';
-    int n = send(sockfd, &castedMsg, sizeof(char), 0);
+    //char castedMsg = msg + '0';
+    int n = send(sockfd, (char *)&msg, sizeof(int), 0);
     if (n < 0)
         error("ERROR writing int to server socket");
 

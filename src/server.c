@@ -73,17 +73,17 @@ void error(const char *msg)
 /* Reads an int from a client socket. */
 int recv_int(int cli_sockfd)
 {
-    char msg;
-    int n = recv(cli_sockfd, &msg, sizeof(char), 0);
+    int msg;
+    int n = recv(cli_sockfd, (char *)&msg, sizeof(int), 0);
 
     if (n < 0 || n != sizeof(char)) /* Not what we were expecting. Client likely disconnected. */
         return -1;
 
     #ifdef DEBUG
-    printf("[DEBUG] Received int: %d\n", msg - '0');
+    printf("[DEBUG] Received int: %d\n", msg);
     #endif
 
-    return msg - '0';
+    return msg;
 }
 
 /*
@@ -102,8 +102,8 @@ void write_client_msg(int cli_sockfd, char * msg)
 /* Writes an int to a client socket. */
 void write_client_int(int cli_sockfd, int msg)
 {
-    char castedMsg = msg + '0';
-    int n = send(cli_sockfd, &castedMsg, sizeof(char), 0);
+    //char castedMsg = msg + '0';
+    int n = send(cli_sockfd, (char *)&msg, sizeof(int), 0);
     if (n < 0)
         error("ERROR writing int to client socket");
 }
