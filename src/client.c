@@ -98,11 +98,11 @@ void recv_msg(int sockfd, char * msg)
 int recv_int(int sockfd)
 {
     int msg = 0;
-    char myBuf[25];
-    memset(myBuf, 0, 25);
+    char *myBuf = calloc(25, sizeof(char));
     int n = recv(sockfd, myBuf, 25, 0);
     msg = atoi(myBuf);
-    printf("n is %d\n", msg);
+
+    printf("buffer is %s, msg is %d\n", myBuf, msg);
     if (n < 0)
         error("ERROR reading int from server socket");
 
@@ -121,8 +121,7 @@ int recv_int(int sockfd)
 void write_server_int(int sockfd, int msg)
 {
     //char castedMsg = msg + '0';
-    char myBuf[25];
-    memset(myBuf, 0, 25);
+    char *myBuf = calloc(25, sizeof(char));
     /* itoa(msg, myBuf, 10); */
     snprintf(myBuf, sizeof(myBuf), "%d", msg);
     int n = send(sockfd, myBuf, strlen(myBuf), 0);
